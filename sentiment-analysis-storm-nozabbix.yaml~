@@ -1,0 +1,103 @@
+envExport: 
+  services: 
+    "zabbix-agent": 
+      charm: "cs:~samuel-cozannet/trusty/zabbix-agent"
+      num_units: 0
+      annotations: 
+        "gui-x": "1125"
+        "gui-y": "1050"
+    "storm-twitter": 
+      charm: "cs:~samuel-cozannet/trusty/storm-twitter"
+      num_units: 0
+      annotations: 
+        "gui-x": "1650"
+        "gui-y": "450"
+    kafka: 
+      charm: "cs:~hazmat/trusty/kafka"
+      num_units: 1
+      constraints: "cpu-cores=2 mem=2048 root-disk=65536"
+      annotations: 
+        "gui-x": "600"
+        "gui-y": "450"
+    "kafka-twitter": 
+      charm: "cs:~samuel-cozannet/trusty/kafka-twitter"
+      num_units: 1
+      options: 
+        keywords: ilearntsomethingtoday
+        twitter_access_token: twitter_access_token
+        twitter_access_token_secret: twitter_access_token_secret
+        twitter_consumer_key: twitter_consumer_key
+        twitter_consumer_secret: twitter_consumer_secret
+      annotations: 
+        "gui-x": "250"
+        "gui-y": "450"
+    "storm-worker": 
+      charm: "cs:~samuel-cozannet/trusty/hdp-storm"
+      num_units: 4
+      annotations: 
+        "gui-x": "1125"
+        "gui-y": "450"
+    "hdp-zookeeper": 
+      charm: "cs:~samuel-cozannet/trusty/hdp-zookeeper"
+      num_units: 3
+      constraints: "cpu-cores=2 mem=2048 root-disk=65536"
+      annotations: 
+        "gui-x": "950"
+        "gui-y": "750"
+    dashing: 
+      charm: "cs:~samuel-cozannet/trusty/dashing"
+      num_units: 1
+      options: 
+        repository: "https://github.com/SaMnCo/dashing-frontend-sentiment-analysis.git"
+      expose: true
+      annotations: 
+        "gui-x": "2350"
+        "gui-y": "450"
+    "nimbus-server": 
+      charm: "cs:~samuel-cozannet/trusty/hdp-storm"
+      num_units: 1
+      expose: true
+      annotations: 
+        "gui-x": "1300"
+        "gui-y": "750"
+    "sentiment-analysis-frontend": 
+      charm: "cs:~samuel-cozannet/trusty/sentiment-analysis-frontend"
+      num_units: 1
+      expose: true
+      annotations: 
+        "gui-x": "2000"
+        "gui-y": "450"
+      to: 
+        - dashing=0
+  relations: 
+    - - "hdp-zookeeper:zookeeper"
+      - "storm-twitter:zookeeper"
+    - - "storm-twitter:nimbus"
+      - "nimbus-server:nimbus"
+    - - "nimbus-server:zookeeper"
+      - "hdp-zookeeper:zookeeper"
+    - - "storm-worker:zookeeper"
+      - "hdp-zookeeper:zookeeper"
+    - - "nimbus-server:nimbus"
+      - "storm-worker:slave"
+    - - "kafka:zk"
+      - "hdp-zookeeper:zookeeper"
+    - - "kafka:client"
+      - "kafka-twitter:kafka"
+    - - "dashing:website"
+      - "sentiment-analysis-frontend:dashing"
+    - - "storm-twitter:nodejs"
+      - "sentiment-analysis-frontend:storm"
+    - - "zabbix-agent:juju-info"
+      - "kafka-twitter:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "hdp-zookeeper:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "kafka:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "nimbus-server:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "storm-worker:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "dashing:juju-info"
+  series: trusty

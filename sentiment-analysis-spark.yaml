@@ -1,0 +1,131 @@
+spark-sentiment-analysis: 
+  services: 
+    "apache-spark": 
+      charm: "cs:~bigdata-dev/trusty/apache-spark"
+      num_units: 0
+      annotations: 
+        "gui-x": "1500"
+        "gui-y": "600"
+    kafka: 
+      charm: "cs:~hazmat/trusty/kafka"
+      num_units: 1
+      constraints: "cpu-cores=2 mem=2048 root-disk=65536"
+      annotations: 
+        "gui-x": "1200"
+        "gui-y": "300"
+    "zabbix-agent": 
+      charm: "cs:~samuel-cozannet/trusty/zabbix-agent"
+      num_units: 0
+      annotations: 
+        "gui-x": "1793.782958984375"
+        "gui-y": "853.87890625"
+    dashing: 
+      charm: "cs:~samuel-cozannet/trusty/dashing"
+      num_units: 1
+      options: 
+        repository: "https://github.com/SaMnCo/dashing-frontend-sentiment-analysis.git"
+      expose: true
+      annotations: 
+        "gui-x": "2400"
+        "gui-y": "300"
+    "hdp-zookeeper": 
+      charm: "cs:~samuel-cozannet/trusty/hdp-zookeeper"
+      num_units: 3
+      constraints: "cpu-cores=2 mem=2048 root-disk=65536"
+      annotations: 
+        "gui-x": "1200"
+        "gui-y": "600"
+    "hdfs-master": 
+      charm: "cs:~bigdata-dev/trusty/apache-hadoop-hdfs-master"
+      num_units: 1
+      annotations: 
+        "gui-x": "1800"
+        "gui-y": "-300"
+    "compute-slave": 
+      charm: "cs:~bigdata-dev/trusty/apache-hadoop-compute-slave"
+      num_units: 4
+      constraints: "cpu-cores=2 mem=2048"
+      annotations: 
+        "gui-x": "1200"
+        "gui-y": "-300"
+    "kafka-twitter": 
+      charm: "cs:~samuel-cozannet/trusty/kafka-twitter"
+      num_units: 1
+      options: 
+        keywords: seo
+        twitter_access_token: twitter_access_token
+        twitter_access_token_secret: twitter_access_token_secret
+        twitter_consumer_key: twitter_consumer_key
+        twitter_consumer_secret: twitter_consumer_secret
+      annotations: 
+        "gui-x": "900"
+        "gui-y": "300"
+    "spark-twitter": 
+      charm: "cs:~samuel-cozannet/trusty/spark-twitter"
+      num_units: 0
+      annotations: 
+        "gui-x": "1800"
+        "gui-y": "300"
+    client: 
+      charm: "cs:~bigdata-dev/trusty/apache-hadoop-client"
+      num_units: 1
+      annotations: 
+        "gui-x": "1500"
+        "gui-y": "300"
+    "sentiment-analysis-frontend": 
+      charm: "cs:~samuel-cozannet/trusty/sentiment-analysis-frontend"
+      num_units: 1
+      expose: true
+      annotations: 
+        "gui-x": "2100"
+        "gui-y": "300"
+      to: 
+        - dashing=0
+    "yarn-master": 
+      charm: "cs:~bigdata-dev/trusty/apache-hadoop-yarn-master"
+      num_units: 1
+      annotations: 
+        "gui-x": "1500"
+        "gui-y": "0"
+  relations: 
+    - - "spark-twitter:hadoop-client"
+      - "client:hadoop-client"
+    - - "kafka:zk"
+      - "hdp-zookeeper:zookeeper"
+    - - "spark-twitter:nodejs"
+      - "sentiment-analysis-frontend:storm"
+    - - "spark-twitter:zookeeper"
+      - "hdp-zookeeper:zookeeper"
+    - - "kafka-twitter:kafka"
+      - "kafka:client"
+    - - "sentiment-analysis-frontend:dashing"
+      - "dashing:website"
+    - - "zabbix-agent:juju-info"
+      - "kafka-twitter:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "hdp-zookeeper:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "kafka:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "dashing:juju-info"
+    - - "hdfs-master:datanode"
+      - "compute-slave:datanode"
+    - - "client:resourcemanager"
+      - "yarn-master:resourcemanager"
+    - - "client:namenode"
+      - "hdfs-master:namenode"
+    - - "yarn-master:namenode"
+      - "hdfs-master:namenode"
+    - - "yarn-master:nodemanager"
+      - "compute-slave:nodemanager"
+    - - "apache-spark:hadoop-client"
+      - "client:hadoop-client"
+    - - "zabbix-agent:juju-info"
+      - "compute-slave:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "hdfs-master:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "yarn-master:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "client:juju-info"
+  series: precise
