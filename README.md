@@ -26,8 +26,16 @@ The Spark bundles are ready for the next iteration of Juju and use actions. If y
      $ juju ssh spark-master/0
      spark-master/0~$ spark-submit --class com.zdatainc.rts.spark.SentimentAnalysis --name "Twitter Sentiment Analys" --master local "/opt/spark/rts.spark/target/rts.spark-0.0.1.jar"
 
+## Spark Standalone + HDFS:
+
+This bundle was built by Amir Sanjar <amir.sanjar@canonical.com> and adds HDFS that prevents the spark app from throwing errors on stdout. 
+
+     $ juju ssh spark-master/0
+     spark-master/0~$ spark-submit --class com.zdatainc.rts.spark.SentimentAnalysis --name "Twitter Sentiment Analys" --master local "/opt/spark/rts.spark/target/rts.spark-0.0.1.jar"
+
 ## Spark YARN:
 
      $ juju ssh client/0
      client/0~$ spark-submit --class com.zdatainc.rts.spark.SentimentAnalysis --name "Twitter Sentiment Analys" --master yarn-client "/opt/spark/rts.spark/target/rts.spark-0.0.1.jar"
+
 
