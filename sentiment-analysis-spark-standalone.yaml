@@ -1,0 +1,94 @@
+sentiment-analysis-spark-standalone: 
+  services: 
+    "hdp-zookeeper": 
+      charm: "cs:~samuel-cozannet/trusty/hdp-zookeeper"
+      num_units: 3
+      constraints: "cpu-cores=2 mem=2048 root-disk=65536"
+      annotations: 
+        "gui-x": "1200"
+        "gui-y": "600"
+    "zabbix-agent": 
+      charm: "cs:~samuel-cozannet/trusty/zabbix-agent"
+      num_units: 0
+      annotations: 
+        "gui-x": "1800"
+        "gui-y": "900"
+    "kafka-twitter": 
+      charm: "cs:~samuel-cozannet/trusty/kafka-twitter"
+      num_units: 1
+      options: 
+        keywords: seo
+      annotations: 
+        "gui-x": "900"
+        "gui-y": "300"
+    kafka: 
+      charm: "cs:~hazmat/trusty/kafka"
+      num_units: 1
+      constraints: "cpu-cores=2 mem=2048 root-disk=65536"
+      annotations: 
+        "gui-x": "1200"
+        "gui-y": "300"
+    "spark-master": 
+      charm: "cs:~bigdata-dev/trusty/apache-spark-common"
+      num_units: 1
+      annotations: 
+        "gui-x": "1500"
+        "gui-y": "300"
+    dashing: 
+      charm: "cs:~samuel-cozannet/trusty/dashing"
+      num_units: 1
+      options: 
+        repository: "https://github.com/SaMnCo/dashing-frontend-sentiment-analysis.git"
+      expose: true
+      annotations: 
+        "gui-x": "2400"
+        "gui-y": "300"
+    "sentiment-analysis-frontend": 
+      charm: "cs:~samuel-cozannet/trusty/sentiment-analysis-frontend"
+      num_units: 1
+      expose: true
+      annotations: 
+        "gui-x": "2100"
+        "gui-y": "300"
+      to: 
+        - dashing=0
+    "spark-twitter": 
+      charm: "cs:~samuel-cozannet/trusty/spark-twitter"
+      num_units: 0
+      annotations: 
+        "gui-x": "1800"
+        "gui-y": "300"
+    "spark-slave": 
+      charm: "cs:~bigdata-dev/trusty/apache-spark-common"
+      num_units: 4
+      annotations: 
+        "gui-x": "1500"
+        "gui-y": "0"
+  relations: 
+    - - "spark-slave:slave"
+      - "spark-master:master"
+    - - "zabbix-agent:juju-info"
+      - "hdp-zookeeper:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "kafka:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "spark-master:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "spark-slave:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "dashing:juju-info"
+    - - "zabbix-agent:juju-info"
+      - "kafka-twitter:juju-info"
+    - - "kafka-twitter:kafka"
+      - "kafka:client"
+    - - "kafka:zk"
+      - "hdp-zookeeper:zookeeper"
+    - - "spark-twitter:zookeeper"
+      - "hdp-zookeeper:zookeeper"
+    - - "spark-twitter:nodejs"
+      - "sentiment-analysis-frontend:storm"
+    - - "sentiment-analysis-frontend:dashing"
+      - "dashing:website"
+    - - "spark-twitter:master"
+      - "spark-master:spark"
+  series: trusty
